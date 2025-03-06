@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Happy Bonding - Secure Banking Solutions{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="text-center">
+        <h1 class="display-3 fw-bold mb-4 gradient-text" style="font-size: 4.5rem;">Happy Bonding</h1>
+        <p class="lead mb-5" style="color: #4a5568; font-size: 1.25rem; max-width: 600px; margin: 0 auto;">
+            Your trusted partner in modern banking solutions. Experience seamless, secure, and innovative financial services.
+        </p>
+        <a href="{% url 'happybondgin_web:home' %}" class="btn btn-get-started">
+            Get Started
+        </a>
+    </div>
+</div>
+{% endblock content %} 
