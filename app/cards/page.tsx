@@ -92,6 +92,11 @@ export default function Cards() {
             <span>Transactions</span>
           </Link>
 
+          <Link href="/users" className="flex items-center space-x-3 p-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all">
+            <span className="text-xl">👥</span>
+            <span>Users</span>
+          </Link>
+
           <Link href="/settings" className="flex items-center space-x-3 p-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all">
             <span className="text-xl">⚙️</span>
             <span>Settings</span>
