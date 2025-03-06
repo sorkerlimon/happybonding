@@ -1,57 +1,15 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Sidebar from "@/app/components/Sidebar";
 
 export default function Dashboard() {
   const router = useRouter();
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Left Sidebar - Only for Dashboard */}
-      <div className="w-64 bg-white border-r border-gray-100 min-h-screen fixed left-0 top-0">
-        <div className="p-6">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-transparent bg-clip-text">
-            Happy Bonding
-          </h1>
-        </div>
-        
-        <nav className="px-4 space-y-2">
-          <Link href="/dashboard" className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg text-gray-700">
-            <span className="text-xl">📊</span>
-            <span>Dashboard</span>
-          </Link>
-
-          <Link href="/cards" className="flex items-center space-x-3 p-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all">
-            <span className="text-xl">💳</span>
-            <span>Cards</span>
-          </Link>
-
-          <Link href="/transactions" className="flex items-center space-x-3 p-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all">
-            <span className="text-xl">💸</span>
-            <span>Transactions</span>
-          </Link>
-
-          <Link href="/settings" className="flex items-center space-x-3 p-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all">
-            <span className="text-xl">⚙️</span>
-            <span>Settings</span>
-          </Link>
-        </nav>
-
-        {/* Logout Button */}
-        <div className="absolute bottom-6 left-4 right-4">
-          <button
-            onClick={() => {
-              localStorage.removeItem('token');
-              router.push('/login');
-            }}
-            className="w-full flex items-center justify-center space-x-2 p-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:opacity-90 transition-all"
-          >
-            <span>🚪</span>
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
-
+      <Sidebar />
+      
       {/* Main Content */}
       <div className="ml-64 flex-1 p-8">
         {/* Header */}
