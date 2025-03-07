@@ -58,7 +58,8 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Description</th>
+                                <th>From</th>
+                                <th>To</th>
                                 <th>Amount</th>
                                 <th>Status</th>
                             </tr>
@@ -67,17 +68,18 @@
                             {% for transaction in recent_transactions %}
                             <tr>
                                 <td>{{ transaction.created_at|date:"M d, Y" }}</td>
-                                <td>{{ transaction.bank_name }}</td>
+                                <td>{{ transaction.user.username }}</td>
+                                <td>{{ transaction.receiver.username }}</td>
                                 <td>₹{{ transaction.amount }}</td>
                                 <td>
                                     <span class="badge {% if transaction.payment_status == 'paid' %}bg-success{% elif transaction.payment_status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
-                                        {{ transaction.payment_status }}
+                                        {{ transaction.payment_status|title }}
                                     </span>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center">No recent transactions</td>
+                                <td colspan="5" class="text-center">No recent transactions</td>
                             </tr>
                             {% endfor %}
                         </tbody>

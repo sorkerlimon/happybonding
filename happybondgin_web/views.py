@@ -33,15 +33,15 @@ def user_logout(request):
 
 @login_required
 def dashboard(request):
-    # Get user's transactions and documents
-    recent_transactions = UserTransactions.objects.filter(user=request.user).order_by('-created_at')[:5]
+    # Get all recent transactions without user filtering
+    recent_transactions = UserTransactions.objects.all().order_by('-created_at')[:5]
     user_documents = UserDocument.objects.filter(user=request.user)
     
     # Calculate statistics
-    total_balance = BankCard.objects.aggregate(Sum('balance'))['balance__sum'] or 0
-    total_transactions = UserTransactions.objects.filter(user=request.user).count()
+    total_balance = UserTransactions.objects.filter(payment_status='paid').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_transactions = UserTransactions.objects.count()  # Count all transactions
     active_cards = BankCard.objects.filter(card_status='active').count()
-    pending_transactions = UserTransactions.objects.filter(user=request.user, payment_status='pending').count()
+    pending_transactions = UserTransactions.objects.filter(payment_status='pending').count()
 
     context = {
         'current_date': timezone.now(),
@@ -65,6 +65,24 @@ def members(request):
     # Get all users except the current user
     all_users = User.objects.all().order_by('-created_at')
     return render(request, 'happybondgin_web/members.html', {'members': all_users})
+
+@login_required
+def transactions(request):
+    # Get all transactions with optional filtering
+    transactions_list = UserTransactions.objects.all().order_by('-created_at')
+    
+    # Calculate totals
+    total_paid = UserTransactions.objects.filter(payment_status='paid').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_pending = UserTransactions.objects.filter(payment_status='pending').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_failed = UserTransactions.objects.filter(payment_status='failed').aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    context = {
+        'transactions': transactions_list,
+        'total_paid': total_paid,
+        'total_pending': total_pending,
+        'total_failed': total_failed,
+    }
+    return render(request, 'happybondgin_web/transactions.html', context)
 
 @login_required
 def settings(request):

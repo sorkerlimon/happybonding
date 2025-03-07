@@ -107,10 +107,16 @@
                 <i class="fas fa-credit-card"></i> Cards
             </a>
             <a href="{% url 'happybondgin_web:members' %}" class="nav-link {% if request.resolver_match.url_name == 'members' %}active{% endif %}">
-                <i class="fas fa-users"></i> Members
+                <i class="fas fa-users me-2"></i>
+                <span>Members</span>
+            </a>
+            <a href="{% url 'happybondgin_web:transactions' %}" class="nav-link">
+                <i class="fas fa-exchange-alt me-2"></i>
+                <span>Transactions</span>
             </a>
             <a href="{% url 'happybondgin_web:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
-                <i class="fas fa-cog"></i> Settings
+                <i class="fas fa-cog me-2"></i>
+                <span>Settings</span>
             </a>
             <a href="{% url 'happybondgin_web:logout' %}" class="nav-link">
                 <i class="fas fa-sign-out-alt"></i> Logout
