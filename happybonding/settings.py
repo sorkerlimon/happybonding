@@ -143,3 +143,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+AUTH_USER_MODEL = 'happybondgin_web.User'
+
+# Login settings
+LOGIN_URL = 'happybondgin_web:login'
+LOGIN_REDIRECT_URL = 'happybondgin_web:dashboard'
+LOGOUT_REDIRECT_URL = 'happybondgin_web:home'

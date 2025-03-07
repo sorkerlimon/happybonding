@@ -1,0 +1,71 @@
+{% extends 'happybondgin_web/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="gradient-text">Members</h2>
+        <div class="search-box">
+            <input type="text" class="form-control bg-dark border-0 text-white" placeholder="Search members...">
+        </div>
+    </div>
+
+    <div class="card-dashboard">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if member.profile_picture %}
+                                    <img src="{{ member.profile_picture.url }}" alt="{{ member.username }}" 
+                                         class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle me-2 d-flex align-items-center justify-content-center {% if member.role == 'admin' %}bg-danger{% else %}bg-primary{% endif %}" 
+                                         style="width: 40px; height: 40px;">
+                                        {{ member.username|make_list|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ member.username }}</div>
+                                    {% if member.role == 'admin' %}
+                                        <small class="text-danger">Administrator</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ member.email }}</td>
+                        <td>{{ member.phone_number|default:"-" }}</td>
+                        <td>
+                            <span class="badge {% if member.role == 'admin' %}bg-danger{% else %}bg-primary{% endif %}">
+                                {{ member.role|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if member.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if member.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ member.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No members found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock dashboard_content %} 

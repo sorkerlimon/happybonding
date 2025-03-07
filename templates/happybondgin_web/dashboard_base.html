@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        width: 250px;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem 0;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem;
+    }
+
+    .sidebar-brand {
+        padding: 0 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.8rem 1.5rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .nav-link i {
+        width: 24px;
+        margin-right: 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .card-dashboard {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .card-dashboard:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card {
+        background: linear-gradient(45deg, rgba(var(--primary-color-rgb), 0.1), rgba(var(--secondary-color-rgb), 0.1));
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h4 class="gradient-text">Happy Bonding</h4>
+        </div>
+        <nav>
+            <a href="{% url 'happybondgin_web:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="{% url 'happybondgin_web:cards' %}" class="nav-link {% if request.resolver_match.url_name == 'cards' %}active{% endif %}">
+                <i class="fas fa-credit-card"></i> Cards
+            </a>
+            <a href="{% url 'happybondgin_web:members' %}" class="nav-link {% if request.resolver_match.url_name == 'members' %}active{% endif %}">
+                <i class="fas fa-users"></i> Members
+            </a>
+            <a href="{% url 'happybondgin_web:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+            <a href="{% url 'happybondgin_web:logout' %}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block dashboard_content %}{% endblock dashboard_content %}
+    </div>
+</div>
+{% endblock content %} 

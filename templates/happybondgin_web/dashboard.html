@@ -1,0 +1,125 @@
+{% extends 'happybondgin_web/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="gradient-text">Welcome, {{ request.user.username }}</h2>
+        <div class="text-muted">{{ current_date|date:"l, F j, Y" }}</div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card-dashboard">
+                <div class="stat-card">
+                    <i class="fas fa-wallet stat-icon"></i>
+                    <div class="stat-value">₹{{ total_balance|default:"0.00" }}</div>
+                    <div class="stat-label">Total Balance</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-dashboard">
+                <div class="stat-card">
+                    <i class="fas fa-exchange-alt stat-icon"></i>
+                    <div class="stat-value">{{ total_transactions|default:"0" }}</div>
+                    <div class="stat-label">Total Transactions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-dashboard">
+                <div class="stat-card">
+                    <i class="fas fa-credit-card stat-icon"></i>
+                    <div class="stat-value">{{ active_cards|default:"0" }}</div>
+                    <div class="stat-label">Active Cards</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-dashboard">
+                <div class="stat-card">
+                    <i class="fas fa-file-invoice stat-icon"></i>
+                    <div class="stat-value">{{ pending_transactions|default:"0" }}</div>
+                    <div class="stat-label">Pending Transactions</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card-dashboard">
+                <h4 class="mb-4">Recent Transactions</h4>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at|date:"M d, Y" }}</td>
+                                <td>{{ transaction.bank_name }}</td>
+                                <td>₹{{ transaction.amount }}</td>
+                                <td>
+                                    <span class="badge {% if transaction.payment_status == 'paid' %}bg-success{% elif transaction.payment_status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ transaction.payment_status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No recent transactions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card-dashboard mb-4">
+                <h4 class="mb-4">Quick Actions</h4>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'happybondgin_web:cards' %}" class="btn btn-get-started">
+                        <i class="fas fa-credit-card me-2"></i> View Cards
+                    </a>
+                    <a href="{% url 'happybondgin_web:members' %}" class="btn btn-get-started">
+                        <i class="fas fa-users me-2"></i> View Members
+                    </a>
+                </div>
+            </div>
+            <!-- Documents Status -->
+            <div class="card-dashboard">
+                <h4 class="mb-4">Document Status</h4>
+                <div class="list-group list-group-flush bg-transparent">
+                    {% for doc in user_documents %}
+                    <div class="list-group-item bg-transparent border-bottom border-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ doc.document_name }}</h6>
+                                <small class="text-muted">Uploaded: {{ doc.uploaded_at|date:"M d, Y" }}</small>
+                            </div>
+                            <span class="badge {% if doc.verified %}bg-success{% else %}bg-warning{% endif %}">
+                                {% if doc.verified %}Verified{% else %}Pending{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted">No documents uploaded</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock dashboard_content %} 

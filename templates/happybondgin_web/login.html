@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Happy Bonding{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+    .login-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2.5rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .login-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(
+            115deg,
+            transparent 0%,
+            transparent 40%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 60%,
+            transparent 100%
+        );
+        animation: shine 3s infinite;
+    }
+    @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    .form-floating > label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .form-control {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        height: 55px;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        backdrop-filter: blur(5px);
+    }
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 0 0 2px var(--primary-color) !important;
+    }
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .login-header .app-logo {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+    .btn-login {
+        width: 100%;
+        padding: 0.8rem;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 82, 255, 0.4);
+    }
+    .alert {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        color: #ff6b6b;
+        backdrop-filter: blur(5px);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="glow-effect glow-1"></div>
+    <div class="glow-effect glow-2"></div>
+    <div class="glow-effect glow-3"></div>
+    <div class="grid-background"></div>
+
+    <div class="container hero-content">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="app-logo">
+                        <i class="fas fa-university gradient-text"></i>
+                    </div>
+                    <h2 class="gradient-text">Welcome Back</h2>
+                    <p class="text-muted">Please login to your account</p>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="form-floating">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                        <label for="email">Email address</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <button type="submit" class="btn btn-login">
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %} 

@@ -2,6 +2,32 @@
 
 {% block title %}Happy Bonding - Next-Gen Banking{% endblock title %}
 
+{% block extra_css %}
+<style>
+    .title-underline {
+        position: relative;
+        display: inline-block;
+    }
+    .title-underline::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180px;
+        height: 4px;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border-radius: 2px;
+        animation: glow 2s infinite;
+    }
+    @keyframes glow {
+        0% { box-shadow: 0 0 5px rgba(0, 82, 255, 0.4); }
+        50% { box-shadow: 0 0 20px rgba(0, 82, 255, 0.6); }
+        100% { box-shadow: 0 0 5px rgba(0, 82, 255, 0.4); }
+    }
+</style>
+{% endblock extra_css %}
+
 {% block content %}
 <section class="hero-section">
     <!-- Animated background elements -->
@@ -14,7 +40,7 @@
         <div class="row align-items-center justify-content-center">
             <div class="col-md-10 text-center">
                 <!-- Main heading with animation -->
-                <h1 class="display-2 fw-bold mb-4 gradient-text animate__animated animate__fadeIn">
+                <h1 class="display-2 fw-bold mb-5 gradient-text animate__animated animate__fadeIn title-underline">
                     Happy Bonding
                 </h1>
                 
@@ -23,34 +49,9 @@
                     Experience the future of banking with our innovative digital solutions
                 </p>
 
-                <!-- Feature cards -->
-                <div class="row g-4 mb-5">
-                    <div class="col-md-4 animate__animated animate__fadeInUp animate__delay-1s">
-                        <div class="feature-card">
-                            <i class="fas fa-shield-alt feature-icon"></i>
-                            <h3 class="h4 mb-3">Secure Banking</h3>
-                            <p class="text-muted mb-0">Bank with confidence using our advanced security measures</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 animate__animated animate__fadeInUp animate__delay-2s">
-                        <div class="feature-card">
-                            <i class="fas fa-bolt feature-icon"></i>
-                            <h3 class="h4 mb-3">Instant Transfers</h3>
-                            <p class="text-muted mb-0">Lightning-fast transactions at your fingertips</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 animate__animated animate__fadeInUp animate__delay-3s">
-                        <div class="feature-card">
-                            <i class="fas fa-chart-line feature-icon"></i>
-                            <h3 class="h4 mb-3">Smart Investing</h3>
-                            <p class="text-muted mb-0">Grow your wealth with intelligent investment tools</p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- CTA Button -->
-                <div class="animate__animated animate__fadeInUp animate__delay-3s">
-                    <a href="{% url 'happybondgin_web:home' %}" class="btn btn-get-started">
+                <div class="animate__animated animate__fadeInUp animate__delay-1s">
+                    <a href="{% url 'happybondgin_web:login' %}" class="btn btn-get-started">
                         Get Started Now
                     </a>
                 </div>
