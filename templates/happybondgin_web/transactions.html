@@ -1,117 +1,644 @@
 {% extends 'happybondgin_web/dashboard_base.html' %}
 
 {% block dashboard_content %}
+<style>
+.filter-section {
+    background: rgba(30, 60, 114, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.table-card {
+    background: linear-gradient(135deg, rgba(30, 60, 114, 0.05) 0%, rgba(42, 82, 152, 0.05) 100%);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.status-paid {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-pending {
+    background-color: #ffc107;
+    color: black;
+}
+
+.status-failed {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Style for calendar icon */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+</style>
+
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="gradient-text">Transactions</h2>
-        <div class="d-flex gap-3">
-            <div class="search-box">
-                <input type="text" class="form-control bg-dark border-0 text-white" placeholder="Search transactions...">
+        <h2 class="gradient-text">Monthly Collection Report</h2>
+        {% if request.user.role == 'admin' %}
+        <button class="btn btn-get-started" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+            <i class="fas fa-plus me-2"></i> Add Transaction
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="row align-items-center">
+            <div class="col-md-5">
+                <label class="form-label text-white">Year</label>
+                <select id="yearFilter" class="form-select bg-dark text-white border-secondary">
+                    {% with current_year=2035 %}
+                        {% for year in ""|ljust:"20" %}
+                            {% with year_number=current_year|add:forloop.counter|add:-20 %}
+                                <option value="{{ year_number }}" {% if selected_year == year_number %}selected{% endif %}>{{ year_number }}</option>
+                            {% endwith %}
+                        {% endfor %}
+                    {% endwith %}
+                </select>
             </div>
-            <button class="btn btn-get-started">
-                <i class="fas fa-plus me-2"></i> New Transaction
-            </button>
+            <div class="col-md-5">
+                <label class="form-label text-white">Month</label>
+                <select id="monthFilter" class="form-select bg-dark text-white border-secondary">
+                    <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                    <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
+                    <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                    <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                    <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                    <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                    <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                    <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                    <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                    <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                    <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                    <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-white">&nbsp;</label>
+                <button onclick="applyFilters()" class="btn btn-get-started w-100">
+                    <i class="fas fa-search me-2"></i> Filter
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Transaction Statistics -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card-dashboard">
-                <div class="stat-card">
-                    <i class="fas fa-check-circle stat-icon text-success"></i>
-                    <div class="stat-value text-success">₹{{ total_paid|default:"0.00" }}</div>
-                    <div class="stat-label">Total Paid</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card-dashboard">
-                <div class="stat-card">
-                    <i class="fas fa-clock stat-icon text-warning"></i>
-                    <div class="stat-value text-warning">₹{{ total_pending|default:"0.00" }}</div>
-                    <div class="stat-label">Total Pending</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card-dashboard">
-                <div class="stat-card">
-                    <i class="fas fa-times-circle stat-icon text-danger"></i>
-                    <div class="stat-value text-danger">₹{{ total_failed|default:"0.00" }}</div>
-                    <div class="stat-label">Total Failed</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Transactions Table -->
-    <div class="card-dashboard">
+    <!-- Monthly Collection Table -->
+    <div class="table-card">
         <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle">
+            <table class="table table-dark table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>From</th>
-                        <th>To</th>
+                        <th>Transaction ID</th>
+                        <th>Sender</th>
+                        <th>Receiver</th>
                         <th>Amount</th>
-                        <th>Month</th>
-                        <th>Year</th>
+                        <th>Payment Date</th>
                         <th>Bank</th>
                         <th>Status</th>
+                        {% if request.user.role == 'admin' %}
                         <th>Actions</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
-                    {% for transaction in transactions %}
+                    {% for payment in monthly_payments %}
                     <tr>
-                        <td>{{ transaction.created_at|date:"M d, Y" }}</td>
+                        <td>{{ payment.id }}</td>
                         <td>
                             <div class="d-flex align-items-center">
+                                {% if payment.user.profile_picture %}
+                                <img src="{{ payment.user.profile_picture.url }}" 
+                                     class="rounded-circle me-2"
+                                     style="width: 35px; height: 35px; object-fit: cover;"
+                                     alt="{{ payment.user.username }}">
+                                {% else %}
                                 <div class="rounded-circle me-2 d-flex align-items-center justify-content-center bg-primary" 
                                      style="width: 35px; height: 35px;">
-                                    {{ transaction.user.username|make_list|first|upper }}
+                                    {{ payment.user.username|make_list|first|upper }}
                                 </div>
-                                {{ transaction.user.username }}
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ payment.user.username }}</div>
+                                    <div class="small text-white-50">{{ payment.user.email }}</div>
+                                </div>
                             </div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <div class="rounded-circle me-2 d-flex align-items-center justify-content-center bg-secondary" 
+                                {% if payment.receiver.profile_picture %}
+                                <img src="{{ payment.receiver.profile_picture.url }}" 
+                                     class="rounded-circle me-2"
+                                     style="width: 35px; height: 35px; object-fit: cover;"
+                                     alt="{{ payment.receiver.username }}">
+                                {% else %}
+                                <div class="rounded-circle me-2 d-flex align-items-center justify-content-center bg-info" 
                                      style="width: 35px; height: 35px;">
-                                    {{ transaction.receiver.username|make_list|first|upper }}
+                                    {{ payment.receiver.username|make_list|first|upper }}
                                 </div>
-                                {{ transaction.receiver.username }}
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ payment.receiver.username }}</div>
+                                    <div class="small text-white-50">{{ payment.receiver.email }}</div>
+                                </div>
                             </div>
                         </td>
-                        <td>₹{{ transaction.amount }}</td>
-                        <td>{{ transaction.month }}</td>
-                        <td>{{ transaction.year }}</td>
-                        <td>{{ transaction.bank_name|default:"-" }}</td>
+                        <td>₹{{ payment.amount }}</td>
+                        <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                        <td>{{ payment.bank_name }}</td>
                         <td>
-                            <span class="badge {% if transaction.payment_status == 'paid' %}bg-success{% elif transaction.payment_status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
-                                {{ transaction.payment_status|title }}
+                            <span class="status-badge {% if payment.payment_status == 'paid' %}status-paid{% elif payment.payment_status == 'pending' %}status-pending{% else %}status-failed{% endif %}">
+                                {{ payment.payment_status|title }}
                             </span>
                         </td>
+                        {% if request.user.role == 'admin' %}
                         <td>
-                            <button class="btn btn-sm btn-outline-light me-2">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            {% if transaction.payment_status == 'pending' %}
-                            <button class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            {% endif %}
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-light" onclick="viewPayment('{{ payment.id }}')" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary ms-1" onclick="editPayment('{{ payment.id }}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" onclick="deletePayment('{{ payment.id }}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center">No transactions found</td>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-muted"></i>
+                            <h5 class="text-muted">No payments found for this period</h5>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                {% if monthly_payments %}
+                <tfoot>
+                    <tr class="bg-dark">
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td colspan="5"><strong>₹{{ total_amount }}</strong></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
             </table>
         </div>
     </div>
 </div>
+
+<!-- Add Transaction Modal -->
+<div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="addTransactionModalLabel">Add New Transaction</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addTransactionForm" method="POST" action="{% url 'happybondgin_web:add_transaction' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Transaction ID</label>
+                        <input type="text" name="transaction_id" class="form-control bg-dark text-white border-secondary" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sender</label>
+                        <select name="user" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">Select Sender</option>
+                            {% for member in members %}
+                            <option value="{{ member.id }}">{{ member.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Receiver</label>
+                        <select name="receiver" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">Select Receiver</option>
+                            {% for member in members %}
+                            <option value="{{ member.id }}">{{ member.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark text-white border-secondary">₹</span>
+                            <input type="number" name="amount" class="form-control bg-dark text-white border-secondary" 
+                                   value="1000.00" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Month</label>
+                            <select name="month" class="form-select bg-dark text-white border-secondary" required>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Year</label>
+                            <select name="year" class="form-select bg-dark text-white border-secondary" required>
+                                {% with current_year=2035 %}
+                                    {% for year in ""|ljust:"20" %}
+                                        {% with year_number=current_year|add:forloop.counter|add:-20 %}
+                                            <option value="{{ year_number }}" {% if year_number == current_year %}selected{% endif %}>{{ year_number }}</option>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" name="bank_name" class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Status</label>
+                        <select name="payment_status" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date</label>
+                        <input type="datetime-local" name="payment_date" 
+                               class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this transaction?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark as Paid Modal -->
+<div class="modal fade" id="markAsPaidModal" tabindex="-1" aria-labelledby="markAsPaidModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="markAsPaidModalLabel">Confirm Mark as Paid</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to mark this transaction as paid?</p>
+                <p>Transaction ID: <span id="markAsPaidTransactionId"></span></p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmMarkAsPaidBtn">Mark as Paid</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Transaction Modal -->
+<div class="modal fade" id="editTransactionModal" tabindex="-1" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="editTransactionModalLabel">Edit Transaction</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTransactionForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Transaction ID</label>
+                        <input type="text" id="editTransactionId" class="form-control bg-dark text-white border-secondary" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sender</label>
+                        <select name="user" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">Select Sender</option>
+                            {% for member in members %}
+                            <option value="{{ member.id }}">{{ member.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Receiver</label>
+                        <select name="receiver" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">Select Receiver</option>
+                            {% for member in members %}
+                            <option value="{{ member.id }}">{{ member.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark text-white border-secondary">₹</span>
+                            <input type="number" name="amount" class="form-control bg-dark text-white border-secondary" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Month</label>
+                            <select name="month" class="form-select bg-dark text-white border-secondary" required>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Year</label>
+                            <select name="year" class="form-select bg-dark text-white border-secondary" required>
+                                {% with current_year=2035 %}
+                                    {% for year in ""|ljust:"20" %}
+                                        {% with year_number=current_year|add:forloop.counter|add:-20 %}
+                                            <option value="{{ year_number }}">{{ year_number }}</option>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" name="bank_name" class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Status</label>
+                        <select name="payment_status" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date</label>
+                        <input type="datetime-local" name="payment_date" class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function applyFilters() {
+    const year = document.getElementById('yearFilter').value;
+    const month = document.getElementById('monthFilter').value;
+    window.location.href = `?year=${year}&month=${month}`;
+}
+
+function viewPayment(paymentId) {
+    // Implement view payment details
+}
+
+let markAsPaidModal;
+let editModal;
+let deleteModal;
+let transactionToDelete = null;
+let transactionToMarkAsPaid = null;
+let transactionToEdit = null;
+
+// Initialize modals when the document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    markAsPaidModal = new bootstrap.Modal(document.getElementById('markAsPaidModal'));
+    editModal = new bootstrap.Modal(document.getElementById('editTransactionModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    
+    // Generate transaction ID when Add Transaction modal is opened
+    document.getElementById('addTransactionModal').addEventListener('show.bs.modal', function() {
+        const now = new Date();
+        const timestamp = now.getTime();
+        const randomNum = Math.floor(Math.random() * 1000);
+        const transactionId = `TXN${timestamp}${randomNum}`;
+        document.querySelector('input[name="transaction_id"]').value = transactionId;
+    });
+    
+    // Set current date and time as default for payment_date
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    const defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.querySelector('input[name="payment_date"]').value = defaultDateTime;
+    
+    // Set current month in the month dropdown
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    document.querySelector('select[name="month"]').value = monthNames[now.getMonth()];
+});
+
+function markAsPaid(paymentId) {
+    transactionToMarkAsPaid = paymentId;
+    document.getElementById('markAsPaidTransactionId').textContent = paymentId;
+    markAsPaidModal.show();
+}
+
+document.getElementById('confirmMarkAsPaidBtn').addEventListener('click', function() {
+    if (transactionToMarkAsPaid) {
+        fetch(`/transactions/${transactionToMarkAsPaid}/mark-paid/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            markAsPaidModal.hide();
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error updating payment status');
+            }
+        })
+        .catch(error => {
+            markAsPaidModal.hide();
+            console.error('Error:', error);
+            alert('Error updating payment status');
+        });
+    }
+});
+
+function editPayment(paymentId) {
+    transactionToEdit = paymentId;
+    fetch(`/transactions/${paymentId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Populate the edit modal with payment details
+                document.getElementById('editTransactionId').value = paymentId;
+                const form = document.getElementById('editTransactionForm');
+                form.querySelector('select[name="user"]').value = data.payment.user_id;
+                form.querySelector('select[name="receiver"]').value = data.payment.receiver_id;
+                form.querySelector('input[name="amount"]').value = data.payment.amount;
+                form.querySelector('select[name="month"]').value = data.payment.month;
+                form.querySelector('select[name="year"]').value = data.payment.year;
+                form.querySelector('input[name="bank_name"]').value = data.payment.bank_name;
+                form.querySelector('select[name="payment_status"]').value = data.payment.payment_status;
+                form.querySelector('input[name="payment_date"]').value = data.payment.payment_date;
+                
+                editModal.show();
+            } else {
+                alert(data.message || 'Error loading payment details');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading payment details');
+        });
+}
+
+document.getElementById('editTransactionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!transactionToEdit) return;
+
+    const formData = new FormData(this);
+    
+    fetch(`/transactions/${transactionToEdit}/edit/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        editModal.hide();
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Error updating transaction');
+        }
+    })
+    .catch(error => {
+        editModal.hide();
+        console.error('Error:', error);
+        alert('Error updating transaction');
+    });
+});
+
+function deletePayment(paymentId) {
+    transactionToDelete = paymentId;
+    deleteModal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (transactionToDelete) {
+        fetch(`/transactions/${transactionToDelete}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            deleteModal.hide();
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error deleting transaction');
+            }
+        })
+        .catch(error => {
+            deleteModal.hide();
+            console.error('Error:', error);
+            alert('Error deleting transaction');
+        });
+    }
+});
+
+// Set initial filter values
+window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('year')) document.getElementById('yearFilter').value = params.get('year');
+    if (params.has('month')) document.getElementById('monthFilter').value = params.get('month');
+});
+
+// Form submission handling
+document.getElementById('addTransactionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Error adding transaction');
+        }
+    })
+    .catch(error => {
+        alert('Error adding transaction');
+        console.error('Error:', error);
+    });
+});
+</script>
+{% endblock %}
+
 {% endblock dashboard_content %} 

@@ -101,15 +101,15 @@
                 </div>
             </div>
             <!-- Documents Status -->
-            <div class="card-dashboard">
+            <div>
                 <h4 class="mb-4">Document Status</h4>
                 <div class="list-group list-group-flush bg-transparent">
                     {% for doc in user_documents %}
                     <div class="list-group-item bg-transparent border-bottom border-light">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-0">{{ doc.document_name }}</h6>
-                                <small class="text-muted">Uploaded: {{ doc.uploaded_at|date:"M d, Y" }}</small>
+                                <i class="fas fa-file-alt me-2 gradient-text"></i>
+                                {{ doc.document_name }}
                             </div>
                             <span class="badge {% if doc.verified %}bg-success{% else %}bg-warning{% endif %}">
                                 {% if doc.verified %}Verified{% else %}Pending{% endif %}
@@ -117,7 +117,10 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted">No documents uploaded</div>
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-folder-open mb-2"></i>
+                        <p>No documents uploaded yet</p>
+                    </div>
                     {% endfor %}
                 </div>
             </div>

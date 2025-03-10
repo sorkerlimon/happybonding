@@ -110,9 +110,13 @@
                 <i class="fas fa-users me-2"></i>
                 <span>Members</span>
             </a>
-            <a href="{% url 'happybondgin_web:transactions' %}" class="nav-link">
+            <a href="{% url 'happybondgin_web:transactions' %}" class="nav-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
                 <i class="fas fa-exchange-alt me-2"></i>
                 <span>Transactions</span>
+            </a>
+            <a href="{% url 'happybondgin_web:documents' %}" class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}">
+                <i class="fas fa-file-alt me-2"></i>
+                <span>Documents</span>
             </a>
             <a href="{% url 'happybondgin_web:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
                 <i class="fas fa-cog me-2"></i>

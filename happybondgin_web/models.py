@@ -60,12 +60,21 @@ class User(AbstractBaseUser, PermissionsMixin):
 class UserDocument(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     document_name = models.CharField(max_length=100)
+    document_file = models.FileField(upload_to='user_documents/')
     verified = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     verified_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.document_name}"
+
+    def delete(self, *args, **kwargs):
+        # Delete the file when the document is deleted
+        if self.document_file:
+            storage = self.document_file.storage
+            if storage.exists(self.document_file.name):
+                storage.delete(self.document_file.name)
+        super().delete(*args, **kwargs)
 
 # Monthly Savings
 class UserTransactions(models.Model):
